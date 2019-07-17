@@ -1,23 +1,20 @@
 import React from 'react';
-import { Plugin, Editor, RenderMarkProps, RenderBlockProps } from 'slate-react';
+import { Editor } from 'slate-react';
 import { Value } from 'slate';
 import { isKeyHotkey } from 'is-hotkey';
 
 import {
-  Theme,
   createStyles,
   withStyles,
-  Typography,
   IconButton
 } from '@material-ui/core';
-import { SvgIconProps } from '@material-ui/core/SvgIcon';
 
-// import BulletListButton from '@material-ui/icons/FormatListBulleted';
+import BulletListButton from '@material-ui/icons/FormatListBulleted';
 import BoldButton from '@material-ui/icons/FormatBold';
 import ClearFomattingButton from '@material-ui/icons/FormatClear';
 import ItalicButton from '@material-ui/icons/FormatItalic';
 import UnderlineButton from '@material-ui/icons/FormatUnderlined';
-// import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
+import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
 
 const DEFAULT_NODE = 'paragraph';
 
@@ -26,7 +23,7 @@ const isItalicHotkey = isKeyHotkey('mod+i');
 const isUnderlinedHotkey = isKeyHotkey('mod+u');
 const isCodeHotkey = isKeyHotkey('mod+`');
 
-const styles = (theme: Theme) => {
+const styles = (theme) => {
   createStyles({
     input: {
       color: theme.palette.text.primary,
@@ -58,39 +55,26 @@ const initialValue = Value.fromJSON({
   }
 });
 
-interface RichTextEditorState {
-  value: Value;
-}
-
-interface RichTextEditorProps {
-  classes?: any;
-  error?: string;
-}
-
-class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditorState> {
-  private editor! : Editor;
-   
+class RichTextEditorJS extends React.Component {
   state = {
     value: initialValue
   };
 
-  hasMark = (type: string) => {
+  hasMark = type => {
     const { value } = this.state;
-    return value.activeMarks.some(mark => mark!.type === type);
+    return value.activeMarks.some(mark => mark.type === type);
   };
 
-  hasBlock = (type: string) => {
+  hasBlock = type => {
     const { value } = this.state;
-    return value.blocks.some(node => node!.type === type);
+    return value.blocks.some(node => node.type === type);
   };
 
-  ref = (editor: Editor) => {
+  ref = editor => {
     this.editor = editor;
-  }
+  };
 
   render() {
-    const { classes, error } = this.props;
-
     return (
       <>
         <div style={{ display: 'flex' }}>
@@ -98,50 +82,45 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
           {this.renderMarkButton('italic', ItalicButton)}
           {this.renderMarkButton('underlined', UnderlineButton)}
           {this.renderMarkButton('clear', ClearFomattingButton)}
-          {/* {this.renderBlockButton('bulleted-list', BulletListButton)} */}
-          {/* {this.renderBlockButton('numbered-list', FormatListNumbered)} */}
+          {this.renderBlockButton('bulleted-list', BulletListButton)}
+          {this.renderBlockButton('numbered-list', FormatListNumbered)}
+          {/*
+          {this.renderMarkButton('code', 'code')}
+          {this.renderBlockButton('heading-one', 'looks_one')}
+          {this.renderBlockButton('heading-two', 'looks_two')}
+          {this.renderBlockButton('block-quote', 'format_quote')}
+          {this.renderBlockButton('numbered-list', 'format_list_numbered')}
+          {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
+          */}
         </div>
-        <Typography
-          component="div"
-          className={[classes!.input, error ? classes!.inputError : ''].join(
-            ' '
-          )}
-        >
-          <Editor
-            spellCheck
-            autoFocus
-            placeholder="Enter some rich text..."
-            value={this.state.value}
-            onChange={this.onChange}
-            // onKeyDown={this.onKeyDown}
-            renderBlock={this.renderBlock}
-            renderMark={this.renderMark}
-            ref={this.ref}
-          />
-        </Typography>
+        <Editor
+          spellCheck
+          autoFocus
+          placeholder="Enter some rich text..."
+          ref={this.ref}
+          value={this.state.value}
+          onChange={this.onChange}
+          onKeyDown={this.onKeyDown}
+          renderBlock={this.renderBlock}
+          renderMark={this.renderMark}
+        />
       </>
     );
   }
 
-  renderMarkButton = (
-    type: string,
-    icon: React.ComponentType<SvgIconProps>
-  ) => {
+  renderMarkButton = (type, icon) => {
+    const isActive = this.hasMark(type);
     const IconComponent = icon;
     return (
-      <IconButton
-        onMouseDown={(event: React.MouseEvent) => this.onClickMark(event, type)}
-      >
+      <IconButton onMouseDown={event => this.onClickMark(event, type)}>
         <IconComponent />
       </IconButton>
     );
   };
 
-  renderBlockButton = (
-    type: string,
-    icon: React.ComponentType<SvgIconProps>
-  ) => {
+  renderBlockButton = (type, icon) => {
     let isActive = this.hasBlock(type);
+    const IconComponent = icon;
 
     if (['numbered-list', 'bulleted-list'].includes(type)) {
       const {
@@ -149,31 +128,24 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
       } = this.state;
 
       if (blocks.size > 0) {
-        const parent: any = document.getParent(blocks.first().key);
-        isActive =
-          this.hasBlock('list-item') && parent && parent.type === type
-            ? true
-            : false;
+        const parent = document.getParent(blocks.first().key);
+        isActive = this.hasBlock('list-item') && parent && parent.type === type;
       }
     }
     return (
-      <IconButton
-        onMouseDown={(event: React.MouseEvent) =>
-          this.onClickBlock(event, type)
-        }
-      >
-        {icon}
+      <IconButton onMouseDown={event => this.onClickBlock(event, type)}>
+        <IconComponent />
       </IconButton>
     );
   };
 
-  renderBlock = (props: RenderBlockProps, editor: Plugin, next: () => any) => {
+  renderBlock = (props, editor, next) => {
     const { attributes, children, node } = props;
 
     switch (node.type) {
-      case 'BulletListButton':
+      case 'block-quote':
         return <blockquote {...attributes}>{children}</blockquote>;
-      case '':
+      case 'bulleted-list':
         return <ul {...attributes}>{children}</ul>;
       case 'heading-one':
         return <h1 {...attributes}>{children}</h1>;
@@ -188,7 +160,7 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
     }
   };
 
-  renderMark = (props: RenderMarkProps, editor: Plugin, next: () => any) => {
+  renderMark = (props, editor, next) => {
     const { children, mark, attributes } = props;
 
     switch (mark.type) {
@@ -205,11 +177,11 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
     }
   };
 
-  onChange = ({ value }: { value: Value }) => {
+  onChange = ({ value }) => {
     this.setState({ value });
   };
 
-  onKeyDown = (event: KeyboardEvent, editor: Editor, next: () => void) => {
+  onKeyDown = (event, editor, next) => {
     let mark;
 
     if (isBoldHotkey(event)) {
@@ -223,17 +195,16 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
     } else {
       return next();
     }
-
     event.preventDefault();
     editor.toggleMark(mark);
   };
 
-  onClickMark = (event: React.MouseEvent, type: string) => {
+  onClickMark = (event, type) => {
     event.preventDefault();
     this.editor.toggleMark(type);
   };
 
-  onClickBlock = (event: React.MouseEvent, type: string) => {
+  onClickBlock = (event, type) => {
     event.preventDefault();
 
     const { editor } = this;
@@ -256,11 +227,8 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
     } else {
       // Handle the extra wrapping required for list buttons.
       const isList = this.hasBlock('list-item');
-      const isType = value.blocks.some((block: any) => {
-        return !!document.getClosest(
-          block.key,
-          (parent: any) => parent.type === type
-        );
+      const isType = value.blocks.some(block => {
+        return !!document.getClosest(block.key, parent => parent.type === type);
       });
 
       if (isList && isType) {
@@ -281,4 +249,4 @@ class RichTextEditor extends React.Component<RichTextEditorProps, RichTextEditor
   };
 }
 
-export default withStyles(styles)(RichTextEditor);
+export default withStyles(styles)(RichTextEditorJS);

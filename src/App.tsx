@@ -1,6 +1,6 @@
 import React from 'react';
-import RichTextEditor from './components/RichTextEditor';
+import Testing from './components/Testing';
 
-const App: React.FC = () => <RichTextEditor />
+const App: React.FC = () => <Testing />
 
 export default App;

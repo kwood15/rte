@@ -12,13 +12,13 @@ import {
 } from '@material-ui/core';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
 
-// import BulletListButton from '@material-ui/icons/FormatListBulleted';
+import BulletListButton from '@material-ui/icons/FormatListBulleted';
 import BoldButton from '@material-ui/icons/FormatBold';
 import ClearFomattingButton from '@material-ui/icons/FormatClear';
 import CodeFormattingButton from '@material-ui/icons/Code';
 import ItalicButton from '@material-ui/icons/FormatItalic';
 import UnderlineButton from '@material-ui/icons/FormatUnderlined';
-// import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
+import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
 import StrikethroughButton from '@material-ui/icons/StrikethroughS';
 
 import Html from 'slate-html-serializer';
@@ -28,15 +28,15 @@ const BLOCK_TAGS: any = {
     blockquote: 'quote',
     p: 'paragraph',
     ol: 'numbered-list',
-    ul: 'bulleted-list',
-    code: 'code'
+    ul: 'bulleted-list'
 };
 
 const MARK_TAGS: any = {
     strong: 'bold',
     em: 'italic',
     u: 'underlined',
-    del: 'delete'
+    del: 'delete',
+    code: 'code'
 };
 
 const rules: Rule[] = [
@@ -57,12 +57,6 @@ const rules: Rule[] = [
         serialize(obj: any, children: string) {
             if (obj.object === 'block') {
                 switch (obj.type) {
-                    case 'code':
-                        return (
-                            <pre>
-                                <code>{children}</code>
-                            </pre>
-                        );
                     case 'paragraph':
                         return <p className={obj.data.get('className')}>{children}</p>;
                     case 'quote':
@@ -107,6 +101,8 @@ const rules: Rule[] = [
                         return <u>{children}</u>
                     case 'delete':
                         return <del>{children}</del>
+                    case 'code':
+                        return <code>{children}</code>
                     default:
                         return;
                 }
@@ -188,51 +184,51 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
         );
     }
 
-    // renderBlockButton = ( todo
-    //     type: string,
-    //     icon: React.ComponentType<SvgIconProps>
-    // ) => {
-    //     let isActive = this.hasBlock(type);
-    //     const IconComponent = icon;
+    renderBlockButton = (
+        type: string,
+        icon: React.ComponentType<SvgIconProps>
+    ) => {
+        let isActive = this.hasBlock(type);
+        const IconComponent = icon;
 
-    //     if (['numbered-list', 'bulleted-list'].includes(type)) {
-    //         const { value: { document, blocks } } = this.state;
+        if (['numbered-list', 'bulleted-list'].includes(type)) {
+            const { value: { document, blocks } } = this.state;
 
-    //         if (blocks.size > 0) {
-    //             const parent: any = document.getParent(blocks.first().key);
-    //             isActive =
-    //                 this.hasBlock('list-item') && parent && parent.type === type
-    //                     ? true
-    //                     : false;
-    //         }
-    //     }
-    //     return (
-    //         <IconButton onMouseDown={(event: React.MouseEvent) => this.onClickBlock(event, type)}>
-    //             <IconComponent />
-    //         </IconButton>
-    //     );
-    // }
+            if (blocks.size > 0) {
+                const parent: any = document.getParent(blocks.first().key);
+                isActive =
+                    this.hasBlock('list-item') && parent && parent.type === type
+                        ? true
+                        : false;
+            }
+        }
+        return (
+            <IconButton onMouseDown={(event: React.MouseEvent) => this.onClickBlock(event, type)}>
+                <IconComponent />
+            </IconButton>
+        );
+    }
 
-    // renderBlock = (props: any, editor: EditorProps, next: () => any) => { todo
-    //     const { attributes, children, node } = props;
+    renderBlock = (props: any, editor: EditorProps, next: () => any) => {
+        const { attributes, children, node } = props;
 
-    //     switch (node.type) {
-    //         case 'BulletListButton':
-    //             return <blockquote {...attributes}>{children}</blockquote>;
-    //         case '':
-    //             return <ul {...attributes}>{children}</ul>;
-    //         case 'heading-one':
-    //             return <h1 {...attributes}>{children}</h1>;
-    //         case 'heading-two':
-    //             return <h2 {...attributes}>{children}</h2>;
-    //         case 'list-item':
-    //             return <li {...attributes}>{children}</li>;
-    //         case 'numbered-list':
-    //             return <ol {...attributes}>{children}</ol>;
-    //         default:
-    //             return next();
-    //     }
-    // }
+        switch (node.type) {
+            case 'BulletListButton':
+                return <blockquote {...attributes}>{children}</blockquote>;
+            case '':
+                return <ul {...attributes}>{children}</ul>;
+            case 'heading-one':
+                return <h1 {...attributes}>{children}</h1>;
+            case 'heading-two':
+                return <h2 {...attributes}>{children}</h2>;
+            case 'list-item':
+                return <li {...attributes}>{children}</li>;
+            case 'numbered-list':
+                return <ol {...attributes}>{children}</ol>;
+            default:
+                return next();
+        }
+    }
 
     renderMark = (props: any, editor: EditorProps, next: () => any) => {
         const { children, mark, attributes } = props;
@@ -285,10 +281,6 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
     onClickMark = (event: React.MouseEvent, type: string) => {
         event.preventDefault();
         this.editor.toggleMark(type);
-
-        if (type === 'clear') {
-            localStorage.removeItem('content-ts-version');
-        }
     }
 
     onClickBlock = (event: React.MouseEvent, type: string) => {
@@ -350,10 +342,10 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
                     {this.renderMarkButton('clear', ClearFomattingButton)}
                     {this.renderMarkButton('delete', StrikethroughButton)}
                     {this.renderMarkButton('code', CodeFormattingButton)}
-                    {/* 
+                
                     {this.renderBlockButton('bulleted-list', BulletListButton)}
                     {this.renderBlockButton('numbered-list', FormatListNumbered)} 
-                    */}
+             
                 </div>
                 <Typography
                     component="div"
@@ -364,8 +356,8 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
                         placeholder="Enter some rich text..."
                         value={this.state.value}
                         onChange={this.onChange}
-                        // onKeyDown={this.onKeyDown} todo
-                        // renderBlock={this.renderBlock} todo
+                        // onKeyDown={this.onKeyDown}
+                        renderBlock={this.renderBlock}
                         renderMark={this.renderMark}
                         ref={this.ref}
                     />

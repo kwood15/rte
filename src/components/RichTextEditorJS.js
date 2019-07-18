@@ -25,15 +25,15 @@ const BLOCK_TAGS = {
     blockquote: 'quote',
     p: 'paragraph',
     ol: 'numbered-list',
-    ul: 'bulleted-list',
-    code: 'code'
+    ul: 'bulleted-list'
 };
 
 const MARK_TAGS = {
     strong: 'bold',
     em: 'italic',
     u: 'underlined',
-    del: 'delete'
+    del: 'delete',
+    code: 'code'
 };
 
 const rules = [
@@ -54,12 +54,6 @@ const rules = [
         serialize(obj, children) {
             if (obj.object === 'block') {
                 switch (obj.type) {
-                    case 'code':
-                        return (
-                            <pre>
-                                <code>{children}</code>
-                            </pre>
-                        );
                     case 'paragraph':
                         return <p className={obj.data.get('className')}>{children}</p>;
                     case 'quote':
@@ -104,6 +98,8 @@ const rules = [
                         return <u>{children}</u>
                     case 'delete':
                         return <del>{children}</del>
+                    case 'code':
+                        return <code>{children}</code>
                     default:
                         return;
                 }
@@ -267,10 +263,6 @@ class RichTextEditorJS extends React.Component {
     onClickMark = (event, type) => {
         event.preventDefault();
         this.editor.toggleMark(type);
-
-        if (type === 'clear') {
-            localStorage.removeItem('content-js-version');
-        }
     }
 
     onClickBlock = (event, type) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import Testing from './components/Testing';
+import Testing from './containers/Testing/Testing';
 
 const App: React.FC = () => <Testing />
 

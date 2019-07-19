@@ -8,7 +8,7 @@ import {
     createStyles,
     withStyles,
     Typography,
-    IconButton
+    ButtonGroup
 } from '@material-ui/core';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
 
@@ -23,6 +23,8 @@ import StrikethroughButton from '@material-ui/icons/StrikethroughS';
 
 import Html from 'slate-html-serializer';
 import { Rule } from 'slate-html-serializer';
+
+import EditorButton from './EditorButton';
 
 const BLOCK_TAGS: any = {
     blockquote: 'quote',
@@ -176,36 +178,31 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
     }
 
     renderMarkButton = (type: string, icon: React.ComponentType<SvgIconProps>) => {
+        let isActive = this.hasMark(type);
         const IconComponent = icon;
         return (
-            <IconButton onMouseDown={(event: React.MouseEvent) => this.onClickMark(event, type)}>
-                <IconComponent />
-            </IconButton>
+            <EditorButton active={isActive}>
+                <IconComponent onMouseDown={(event: React.MouseEvent) => this.onClickMark(event, type)} />
+            </EditorButton>
         );
     }
 
-    renderBlockButton = (
-        type: string,
-        icon: React.ComponentType<SvgIconProps>
-    ) => {
-        let isActive = this.hasBlock(type);
+    renderBlockButton = (type: string, icon: React.ComponentType<SvgIconProps>) => {
         const IconComponent = icon;
+        let isActive = this.hasBlock(type);
 
         if (['numbered-list', 'bulleted-list'].includes(type)) {
             const { value: { document, blocks } } = this.state;
 
             if (blocks.size > 0) {
                 const parent: any = document.getParent(blocks.first().key);
-                isActive =
-                    this.hasBlock('list-item') && parent && parent.type === type
-                        ? true
-                        : false;
+                isActive = this.hasBlock('list-item') && parent && parent.type === type;
             }
         }
         return (
-            <IconButton onMouseDown={(event: React.MouseEvent) => this.onClickBlock(event, type)}>
-                <IconComponent />
-            </IconButton>
+            <EditorButton active={isActive}>
+                <IconComponent onMouseDown={(event: React.MouseEvent) => this.onClickBlock(event, type)} />
+            </EditorButton>
         );
     }
 
@@ -213,9 +210,9 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
         const { attributes, children, node } = props;
 
         switch (node.type) {
-            case 'BulletListButton':
+            case 'block-quote':
                 return <blockquote {...attributes}>{children}</blockquote>;
-            case '':
+            case 'bulleted-list':
                 return <ul {...attributes}>{children}</ul>;
             case 'heading-one':
                 return <h1 {...attributes}>{children}</h1>;
@@ -335,21 +332,20 @@ class RichTextEditorTS extends React.Component<RichTextEditorTSProps, RichTextEd
         return (
             <>
                 <Typography paragraph>TS Version</Typography>
-                <div style={{ display: 'flex' }}>
+                <ButtonGroup size="small" aria-label="rich text editor buttons">
                     {this.renderMarkButton('bold', BoldButton)}
                     {this.renderMarkButton('italic', ItalicButton)}
                     {this.renderMarkButton('underlined', UnderlineButton)}
                     {this.renderMarkButton('clear', ClearFomattingButton)}
                     {this.renderMarkButton('delete', StrikethroughButton)}
-                    {this.renderMarkButton('code', CodeFormattingButton)}
-                
+                    {this.renderMarkButton('code', CodeFormattingButton)}        
                     {this.renderBlockButton('bulleted-list', BulletListButton)}
                     {this.renderBlockButton('numbered-list', FormatListNumbered)} 
-             
-                </div>
+                </ButtonGroup>
                 <Typography
                     component="div"
-                    className={[classes!.input, error ? classes!.inputError : ''].join(' ')}>
+                    className={[classes!.input, error ? classes!.inputError : ''].join(' ')}
+                >
                     <Editor
                         spellCheck
                         autoFocus

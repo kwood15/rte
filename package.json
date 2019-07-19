@@ -13,6 +13,7 @@
     "@types/slate-html-serializer": "^0.6.3",
     "@types/slate-react": "^0.22.3",
     "emotion": "^10.0.14",
+    "formik": "^1.5.8",
     "immutable": "^4.0.0-rc.12",
     "is-hotkey": "^0.1.4",
     "react": "^16.8.6",

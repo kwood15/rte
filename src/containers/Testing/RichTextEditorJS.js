@@ -7,7 +7,10 @@ import {
     createStyles,
     withStyles,
     Typography,
-    IconButton
+    ButtonGroup,
+    FormControl,
+    FormLabel,
+    FormHelperText
 } from '@material-ui/core';
 
 import BulletListButton from '@material-ui/icons/FormatListBulleted';
@@ -20,6 +23,8 @@ import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
 import StrikethroughButton from '@material-ui/icons/StrikethroughS';
 
 import Html from 'slate-html-serializer';
+
+import EditorButton from './EditorButton';
 
 const BLOCK_TAGS = {
     blockquote: 'quote',
@@ -117,25 +122,23 @@ const isItalicHotkey = isKeyHotkey('mod+i');
 const isUnderlinedHotkey = isKeyHotkey('mod+u');
 const isCodeHotkey = isKeyHotkey('mod+`');
 
-const styles = (theme) => {
-    createStyles({
-        input: {
-            color: theme.palette.text.primary,
-            paddingLeft: theme.spacing(1),
-            paddingRight: theme.spacing(1),
-            borderStyle: 'solid',
-            borderRadius: theme.shape.borderRadius,
-            borderWidth: 1,
-            borderColor:
-                theme.palette.type === 'light'
-                    ? 'rgba(0, 0, 0, 0.23)'
-                    : 'rgba(255, 255, 255, 0.23)'
-        },
-        inputError: {
-            borderColor: theme.palette.error.main
-        }
-    });
-};
+const styles = theme => createStyles({
+    input: {
+        color: theme.palette.text.primary,
+        paddingLeft: theme.spacing(1),
+        paddingRight: theme.spacing(1),
+        borderStyle: 'solid',
+        borderRadius: theme.shape.borderRadius,
+        borderWidth: 1,
+        borderColor:
+            theme.palette.type === 'light'
+                ? 'rgba(0, 0, 0, 0.23)'
+                : 'rgba(255, 255, 255, 0.23)'
+    },
+    inputError: {
+        borderColor: theme.palette.error.main
+    }
+});
 
 const placeholderValue = '<p></p>';
 const initialValue = localStorage.getItem('content-js-version') || placeholderValue
@@ -160,11 +163,12 @@ class RichTextEditorJS extends React.Component {
     }
 
     renderMarkButton = (type, icon) => {
+        let isActive = this.hasMark(type);
         const IconComponent = icon;
         return (
-            <IconButton onMouseDown={event => this.onClickMark(event, type)}>
-                <IconComponent />
-            </IconButton>
+            <EditorButton active={isActive}>
+                <IconComponent onMouseDown={event => this.onClickMark(event, type)} />
+            </EditorButton>
         );
     }
 
@@ -183,9 +187,9 @@ class RichTextEditorJS extends React.Component {
             }
         }
         return (
-            <IconButton onMouseDown={event => this.onClickBlock(event, type)}>
-                <IconComponent />
-            </IconButton>
+            <EditorButton active={isActive}>
+                <IconComponent onMouseDown={event => this.onClickBlock(event, type)} />
+            </EditorButton>
         );
     }
 
@@ -310,11 +314,31 @@ class RichTextEditorJS extends React.Component {
     }
 
     render() {
-        const { classes, error } = this.props;
+        const {
+            classes,
+            label,
+            // onChange,
+            disabled,
+            required,
+            error,
+            helperText
+        } = this.props;
         return (
-            <>
+            <FormControl
+                fullWidth={true}
+                margin="normal"
+                disabled={disabled}
+                required={required}
+                variant="outlined"
+                error={error}
+            >
                 <Typography paragraph>JS Version</Typography>
-                <div style={{ display: 'flex' }}>
+                {label && (
+                    <FormLabel required={required} disabled={disabled} error={error}>
+                        <>{label}</>
+                    </FormLabel>
+                )}
+                <ButtonGroup size="small" aria-label="rich text editor buttons">
                     {this.renderMarkButton('bold', BoldButton)}
                     {this.renderMarkButton('italic', ItalicButton)}
                     {this.renderMarkButton('underlined', UnderlineButton)}
@@ -323,10 +347,11 @@ class RichTextEditorJS extends React.Component {
                     {this.renderMarkButton('code', CodeFormattingButton)}
                     {this.renderBlockButton('bulleted-list', BulletListButton)}
                     {this.renderBlockButton('numbered-list', FormatListNumbered)}
-                </div>
+                </ButtonGroup>
                 <Typography
                     component="div"
-                    className={[classes.input, error ? classes.inputError : ''].join(' ')}>
+                    className={[classes.input, error ? classes.inputError : ''].join(' ')}
+                >
                     <Editor
                         spellCheck
                         autoFocus
@@ -339,7 +364,10 @@ class RichTextEditorJS extends React.Component {
                         renderMark={this.renderMark}
                     />
                 </Typography>
-            </>
+                {helperText && (
+                    <FormHelperText error={error}>{helperText}</FormHelperText>
+                )}
+            </FormControl>
         );
     }
 }

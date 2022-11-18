@@ -18,7 +18,7 @@
     "is-hotkey": "^0.1.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1",
+    "react-scripts": "5.0.1",
     "slate": "^0.47.4",
     "slate-html-serializer": "^0.8.6",
     "slate-react": "^0.22.4",
